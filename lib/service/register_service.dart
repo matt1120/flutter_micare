@@ -10,7 +10,7 @@ class RegisterProvider extends GetConnect {
   }
 
   Future<Response<String>> registerForm(RegisterFormModel registerFormModel) =>
-      post('$myBaseUrl/AssessmentTestRSVP', {
+      post('$myBaseUrl/interviewapi/AssessmentTestRSVP', {
         'ApiKey': '123456',
         'FirstName': registerFormModel.firstName,
         'LastName': registerFormModel.lastName,

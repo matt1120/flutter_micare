@@ -3,9 +3,11 @@ import 'package:flutter_micare/model/register_form_model.dart';
 import 'package:flutter_micare/service/register_service.dart';
 import 'package:get/state_manager.dart';
 
+enum RegisterStatus { initial, success, failure }
+
 class RegisterController extends GetxController {
   RxBool isLoading = false.obs;
-  RxBool isSuccess = false.obs;
+  Rx<RegisterStatus> registerStatus = RegisterStatus.initial.obs;
   final RegisterProvider _registerProvider = RegisterProvider();
 
   Future<void> register(RegisterFormModel registerFormModel) async {
@@ -13,7 +15,11 @@ class RegisterController extends GetxController {
     try {
       var response = await _registerProvider.registerForm(registerFormModel);
 
-      debugPrint('response: ${response.body}');
+      if (response.statusCode == 200) {
+        registerStatus.value = RegisterStatus.success;
+      } else {
+        registerStatus.value = RegisterStatus.failure;
+      }
     } catch (e) {
       debugPrint('[RegisterController] registerForm error;  $e');
     } finally {

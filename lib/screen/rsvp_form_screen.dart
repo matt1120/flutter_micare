@@ -3,11 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_micare/controller/register_controller.dart';
 import 'package:flutter_micare/model/register_form_model.dart';
 import 'package:flutter_micare/screen/function.dart';
+import 'package:flutter_micare/screen/widget/custom_button.dart';
 import 'package:flutter_micare/screen/widget/custom_text_field.dart';
 import 'package:flutter_micare/shared/custom_color_code.dart';
 import 'package:flutter_micare/shared/custom_text_style.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:get/instance_manager.dart';
+import 'package:get/state_manager.dart';
 
 class RsvpForm extends StatelessWidget {
   const RsvpForm({super.key});
@@ -120,7 +121,10 @@ class _BuildFormState extends State<_BuildForm> {
                     label: 'Contact Number',
                     hintText: 'Enter Contact Number',
                     controller: _contacterController,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(11),
+                    ],
                     validator: (value) => validateContactNumber(value),
                   ),
                   const SizedBox(height: 10),
@@ -135,13 +139,26 @@ class _BuildFormState extends State<_BuildForm> {
               ),
             ),
           ),
-          Container(
-            padding: const EdgeInsets.only(top: 20),
-            width: double.infinity,
-            child: Obx(
-              () => _registerController.isLoading.value
+          Obx(() {
+            Future.delayed(Duration.zero, () {
+              switch (_registerController.registerStatus.value) {
+                case RegisterStatus.success:
+                  _showRegisterSuccessDialog(context: context);
+
+                  break;
+                case RegisterStatus.failure:
+                  _showResgisterFailureMsg(context);
+                  break;
+                default:
+              }
+            });
+            return Container(
+              padding: const EdgeInsets.only(top: 20),
+              width: double.infinity,
+              child: _registerController.isLoading.value
                   ? const Center(child: CircularProgressIndicator())
-                  : ElevatedButton(
+                  : CustomElevatedButton(
+                      text: 'Submit',
                       onPressed: () {
                         if (_formKey.currentState?.validate() == true) {
                           final RegisterFormModel registerFormModel =
@@ -153,18 +170,61 @@ class _BuildFormState extends State<_BuildForm> {
 
                           _registerController.register(registerFormModel);
                         }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: CustomColorCode.secondaryColor,
-                      ),
-                      child: const Text('Submit'),
-                    ),
-            ),
-          ),
+                      }),
+            );
+          }),
         ],
       ),
     );
+  }
+
+  // Function to show success dialog
+  void _showRegisterSuccessDialog({required BuildContext context}) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+            titlePadding: const EdgeInsets.only(top: 18),
+            title: Center(
+              child: Text(
+                "THANK YOU",
+                style: CustomTextStyle.bodyTextStyleLarge.copyWith(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: CustomColorCode.secondaryColor),
+              ),
+            ),
+            content: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Thank you for the submission. \nRSVP form was submitted successfully.",
+                  textAlign: TextAlign.center,
+                  style: CustomTextStyle.bodyTextStyleMedium,
+                ),
+                const SizedBox(height: 30),
+                SizedBox(
+                  width: double.infinity,
+                  child: CustomElevatedButton(
+                      text: 'Ok',
+                      onPressed: () {
+                        Navigator.pop(context);
+                      }),
+                )
+              ],
+            ));
+      },
+    );
+  }
+
+  void _showResgisterFailureMsg(BuildContext context) {
+    const snackBar = SnackBar(
+      content: Text('Register unsuccesful. Please try again later.'),
+      duration: Duration(seconds: 3), // Duration the SnackBar is visible
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   @override
