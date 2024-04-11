@@ -1,1 +1,1 @@
-String myBaseUrl = 'https://integration.micaresvc.com/';
+String myBaseUrl = 'https://integration.micaresvc.com';

@@ -3,7 +3,7 @@ import 'package:flutter_micare/model/register_form_model.dart';
 import 'package:flutter_micare/service/register_service.dart';
 import 'package:get/state_manager.dart';
 
-enum RegisterStatus { initial, success, failure }
+enum RegisterStatus { initial, success, failure, loading }
 
 class RegisterController extends GetxController {
   RxBool isLoading = false.obs;
@@ -12,6 +12,8 @@ class RegisterController extends GetxController {
 
   Future<void> register(RegisterFormModel registerFormModel) async {
     isLoading.value = true;
+    registerStatus.value = RegisterStatus.loading;
+
     try {
       var response = await _registerProvider.registerForm(registerFormModel);
 
